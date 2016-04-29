@@ -50,7 +50,7 @@ class HeaderDetails(QtGui.QListWidget):
         if editable:
             self.connect(self, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.editItem)
         for key, value in conn.headers:
-            item = QtGui.QListWidgetItem(key+': '+value)
+            item = QtGui.QListWidgetItem(str(key)+': '+str(value))
             if editable:
                 item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
             self.addItem(item)

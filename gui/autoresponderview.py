@@ -13,21 +13,23 @@ class AutoResponder(QtGui.QWidget):
         layout = QtGui.QVBoxLayout()
         layout.addStretch(1)
 
-        self.model = QtGui.QStandardItemModel()
+        self.model = CustomStandardListModel()
         for key in self.state.get_auto_response_keys():
             list_item = QtGui.QStandardItem(key)
             list_item.setCheckable(True)
+            list_item.setFlags(list_item.flags() | QtCore.Qt.ItemIsEditable)
             if self.state.get_auto_response_data(key)['active']:
                 list_item.setCheckState(2)
             else:
                 list_item.setCheckState(0)
             self.model.appendRow(list_item)
-        self.model.itemChanged.connect(self.on_list_item_change)
+        self.model.onItemChange.connect(self.on_list_item_change)
         self.response_list = QtGui.QListView()
         self.response_list.setModel(self.model)
         self.response_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.response_list.clicked.connect(self.set_stored_file_path)
         self.connect(self.response_list, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_context_menu)
+        # self.connect(self.response_list, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.response_list.editItem)
 
         self.file_selector = FileSelector()
         self.connect(self.file_selector, QtCore.SIGNAL('FILE_CONTENT_SET'), self.set_content_from_file)
@@ -44,6 +46,7 @@ class AutoResponder(QtGui.QWidget):
         list_item = QtGui.QStandardItem(url)
         list_item.setCheckable(True)
         list_item.setCheckState(2)
+        list_item.setFlags(list_item.flags() | QtCore.Qt.ItemIsEditable)
         self.model.appendRow(list_item)
         response = copy.deepcopy(f.response)
         response.decode()
@@ -57,8 +60,12 @@ class AutoResponder(QtGui.QWidget):
 
         self.state.add_auto_response(url, data)
 
-    def on_list_item_change(self, item):
-        self.state.set_auto_response_active(str(item.text()), item.checkState())
+    def on_list_item_change(self, oldItem, newItem):
+        if not oldItem.text() == newItem.text():
+            self.state.replace_auto_response_key(str(oldItem.text()), str(newItem.text()))
+        if not oldItem.checkState() == newItem.checkState():
+            self.state.set_auto_response_active(str(newItem.text()), newItem.checkState())
+
         
     def show_context_menu(self, QPos):
         self.listMenu = QtGui.QMenu()
@@ -100,6 +107,19 @@ class AutoResponder(QtGui.QWidget):
             content_file.close()
         except IOError:
             show_dialog("Cannot read file")
+
+
+class CustomStandardListModel(QtGui.QStandardItemModel):
+    onItemChange = QtCore.pyqtSignal(QtGui.QStandardItem, QtGui.QStandardItem)
+
+    def setData(self, index, value, role):
+        if role == QtCore.Qt.EditRole or role == QtCore.Qt.DisplayRole:
+            old = self.itemFromIndex(index).clone()
+            QtGui.QStandardItemModel.setData(self, index, value, role)
+            new = self.itemFromIndex(index)
+            self.onItemChange.emit(old, new)
+        return
+
 
 
 

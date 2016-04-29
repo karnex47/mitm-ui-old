@@ -4,9 +4,11 @@ from flowdetails import FlowDetails
 class DetailsView(QtGui.QDialog):
     def __init__(self, f):
         QtGui.QDialog.__init__(self)
+        layout = QtGui.QHBoxLayout()
         tabs = DetailsTabs(self)
         tabs.set_flow(f)
-        tabs.move(0,0)
+        layout.addWidget(tabs)
+        self.setLayout(layout)
         self.setWindowTitle(f.request.url)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.exec_()

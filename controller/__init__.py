@@ -119,3 +119,7 @@ class ControllerState(flow.State, QtCore.QObject):
     def get_content_file_path(self, key):
         return self._auto_respond[key]['file']
 
+    def replace_auto_response_key(self, oldKey, newKey):
+        value = deepcopy(self._auto_respond[oldKey])
+        self.remove_auto_response(oldKey)
+        self.add_auto_response(newKey, value)
