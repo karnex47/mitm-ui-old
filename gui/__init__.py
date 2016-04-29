@@ -1,10 +1,12 @@
 from PyQt4 import QtGui
 from mainwidget import MainGui
 
-class Gui(QtGui.QMainWindow):
-    def __init__(self):
+class MainWindow(QtGui.QMainWindow):
+    def __init__(self, server, options):
         QtGui.QMainWindow.__init__(self)
-        self.showMainWindow()
+        self.ui = MainGui(server, options)
+        self.setCentralWidget(self.ui)
+        self.show()
 
-    def showMainWindow(self):
-        MainGui()
+    def closeEvent(self, event):
+        self.ui.terminate()

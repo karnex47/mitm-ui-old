@@ -2,6 +2,7 @@
 import sys
 from PyQt4 import QtGui
 from gui import MainGui
+from gui import MainWindow
 
 def send_message(message):
     print message
@@ -53,7 +54,7 @@ def main(argv):
     app = QtGui.QApplication(sys.argv)
     # window = QtGui.QMainWindow()
     # window.show()
-    ui = MainGui(server, options)
+    ui = MainWindow(server, options)
     ui.setWindowTitle('Name TBD')
     ui.show()
     sys.exit(app.exec_())

@@ -57,6 +57,10 @@ class ControllerState(flow.State, QtCore.QObject):
         self._replay = []
         self._auto_respond = {}
 
+    def set_data_from_saved_state(self, saved_sate):
+        self._auto_respond = saved_sate['auto_response']
+        self._replay = saved_sate['replay']
+
     def add_request(self, f):
         ret = flow.State.add_request(self, f)
         self.update_view()
@@ -84,6 +88,9 @@ class ControllerState(flow.State, QtCore.QObject):
 
     def update_view(self):
         self.signal.emit()
+
+    def get_auto_response_keys(self):
+        return self._auto_respond.keys()
 
     def add_auto_response(self, key, value):
         self._auto_respond[key] = value

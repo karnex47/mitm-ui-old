@@ -14,6 +14,14 @@ class AutoResponder(QtGui.QWidget):
         layout.addStretch(1)
 
         self.model = QtGui.QStandardItemModel()
+        for key in self.state.get_auto_response_keys():
+            list_item = QtGui.QStandardItem(key)
+            list_item.setCheckable(True)
+            if self.state.get_auto_response_data(key)['active']:
+                list_item.setCheckState(2)
+            else:
+                list_item.setCheckState(0)
+            self.model.appendRow(list_item)
         self.model.itemChanged.connect(self.on_list_item_change)
         self.response_list = QtGui.QListView()
         self.response_list.setModel(self.model)
@@ -89,6 +97,7 @@ class AutoResponder(QtGui.QWidget):
             if response.headers.get_first('content-encoding'):
                 response.encode(self.conn.headers.get_first('content-encoding'))
             self.state.set_auto_response(key, response)
+            content_file.close()
         except IOError:
             show_dialog("Cannot read file")
 

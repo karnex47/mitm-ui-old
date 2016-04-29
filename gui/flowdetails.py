@@ -17,6 +17,7 @@ class FlowDetails(QtGui.QWidget):
             button.clicked.connect(self.on_save)
             layout.addWidget(button)
 
+        layout.setContentsMargins(0,0,0,0)
         self.setLayout(layout)
         self.show()
 
