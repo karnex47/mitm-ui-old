@@ -7,6 +7,7 @@ class DetailsView(QtGui.QDialog):
         tabs = DetailsTabs(self)
         tabs.set_flow(f)
         tabs.move(0,0)
+        self.setWindowTitle(f.request.url)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.exec_()
 
@@ -14,15 +15,6 @@ class DetailsView(QtGui.QDialog):
 class DetailsTabs(QtGui.QTabWidget):
     def __init__(self, parent=None):
         QtGui.QTabWidget.__init__(self, parent)
-        self.setMaximumSize(2000,2000)
-        self.setMinimumSize(400,400)
-        self.setStyleSheet("""
-            .FlowDetails {
-                top: 0;
-                left: 0;
-                height: 100%;
-            }
-        """)
         self.show()
 
     def set_flow(self, f):

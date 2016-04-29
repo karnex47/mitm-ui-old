@@ -50,7 +50,6 @@ class ControllerMaster(flow.FlowMaster):
 
 
 class ControllerState(flow.State, QtCore.QObject):
-    signal = QtCore.pyqtSignal()
     def __init__(self):
         flow.State.__init__(self)
         QtCore.QObject.__init__(self)
@@ -63,17 +62,17 @@ class ControllerState(flow.State, QtCore.QObject):
 
     def add_request(self, f):
         ret = flow.State.add_request(self, f)
-        self.update_view()
+        self.update_view(self.view.index(f), 'add')
         return ret
 
     def add_response(self, f):
         ret = flow.State.add_response(self, f)
-        self.update_view()
+        self.update_view(self.view.index(f), 'update')
         return ret
 
     def add_error(self, f):
         ret = flow.State.add_error(self, f)
-        self.update_view()
+        self.update_view(self.view.index(f), 'update')
         return ret
 
     def recalculate_view(self):
@@ -82,12 +81,13 @@ class ControllerState(flow.State, QtCore.QObject):
         return ret
 
     def delete_flow(self, f):
+        index = self.view.index(f)
         ret = flow.State.delete_flow(self, f)
-        self.update_view()
+        self.update_view(index, 'delete')
         return ret
 
-    def update_view(self):
-        self.signal.emit()
+    def update_view(self, index=None, mode=''):
+        self.emit(QtCore.SIGNAL('UPDATE_LIST'), index, mode)
 
     def get_auto_response_keys(self):
         return self._auto_respond.keys()

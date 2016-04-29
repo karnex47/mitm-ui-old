@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import sys
 from PyQt4 import QtGui
-from gui import MainGui
 from gui import MainWindow
 
 def send_message(message):
@@ -46,8 +45,8 @@ def main(argv):
     check_pyopenssl_version()
     proxy_config = ProxyConfig(
         port=int(1025),
-        # mode="upstream",
-        # upstream_server=(False, False, "localhost", 8081)
+        mode="upstream",
+        upstream_server=(False, False, "localhost", 8081)
     )
     server = get_server(proxy_config)
     options = None

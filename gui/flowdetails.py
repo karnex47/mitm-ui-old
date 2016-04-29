@@ -9,7 +9,6 @@ class FlowDetails(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
         self.conn = conn
         layout = QtGui.QVBoxLayout()
-        layout.addStretch(1)
         self.flow_details_tabs = FlowDetailsTabs(conn, editable)
         layout.addWidget(self.flow_details_tabs)
         if editable:
@@ -17,7 +16,6 @@ class FlowDetails(QtGui.QWidget):
             button.clicked.connect(self.on_save)
             layout.addWidget(button)
 
-        layout.setContentsMargins(0,0,0,0)
         self.setLayout(layout)
         self.show()
 

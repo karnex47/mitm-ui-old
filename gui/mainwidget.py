@@ -30,24 +30,22 @@ class MainGui(QtGui.QWidget):
         self.state = ControllerState()
         if prev_instatnce_state:
             self.state.set_data_from_saved_state(prev_instatnce_state)
-        self.flow_list = FlowList()
+        self.flow_list = FlowList(self.state)
         self.actions_view = ActionsView(self.state)
         self.show_main_widget(server, options)
 
     def show_main_widget(self, server, options):
         layout = QtGui.QHBoxLayout()
-        layout.addStretch(1)
         layout.addWidget(self.flow_list)
         layout.addWidget(self.actions_view)
         self.setLayout(layout)
+        self.flow_list.setStyleSheet( """QListView:item:selected:active {background-color:red;}""")
 
         self.controllerThread = ControllerThread(server, self.state, options)
-        self.state.signal.connect(self.set_flow)
         self.connect(self.flow_list, QtCore.SIGNAL("clicked"), self.set_flow_details)
         # self.connect(self.flow_list, QtCore.SIGNAL("ADD_TO_REPLAY"), self.show_flow_details)
         self.connect(self.flow_list, QtCore.SIGNAL("ADD_TO_AUTO_RESPONDER"), self.add_auto_response)
         self.controllerThread.start()
-        # self.setMinimumSize(800, 400)
 
     def set_flow_details(self, f):
         self.actions_view.set_flow_details(f)
@@ -57,9 +55,6 @@ class MainGui(QtGui.QWidget):
 
     def shut_down(self):
         self.controllerThread.terminate()
-
-    def set_flow(self):
-        self.flow_list.set_list_data(self.state.view)
 
     def get_prev_instance_state(self):
         try:
