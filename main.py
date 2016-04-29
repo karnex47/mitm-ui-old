@@ -51,11 +51,12 @@ def main(argv):
     server = get_server(proxy_config)
     options = None
     app = QtGui.QApplication(sys.argv)
+    # window = QtGui.QMainWindow()
+    # window.show()
     ui = MainGui(server, options)
     ui.setWindowTitle('Name TBD')
     ui.show()
     sys.exit(app.exec_())
-
 
 if __name__ == '__main__':
     main(sys.argv)
