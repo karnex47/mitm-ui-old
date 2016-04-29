@@ -105,3 +105,10 @@ class ControllerState(flow.State, QtCore.QObject):
 
     def get_cached_response(self, key):
         return self._auto_respond[key]['response']
+
+    def set_content_file_path(self, key, file_path):
+        self._auto_respond[key]['file'] = file_path
+
+    def get_content_file_path(self, key):
+        return self._auto_respond[key]['file']
+

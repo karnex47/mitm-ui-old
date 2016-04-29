@@ -18,15 +18,17 @@ class AutoResponder(QtGui.QWidget):
         self.response_list = QtGui.QListView()
         self.response_list.setModel(self.model)
         self.response_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.response_list.clicked.connect(self.set_stored_file_path)
         self.connect(self.response_list, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_context_menu)
 
-        file_selector = FileSelector()
+        self.file_selector = FileSelector()
+        self.connect(self.file_selector, QtCore.SIGNAL('FILE_CONTENT_SET'), self.set_content_from_file)
 
         layout.addWidget(self.response_list)
-        layout.addWidget(file_selector)
+        layout.addWidget(self.file_selector)
 
         layout.setStretchFactor(self.response_list, 99)
-        layout.setStretchFactor(file_selector, 1)
+        layout.setStretchFactor(self.file_selector, 1)
         self.setLayout(layout)
 
     def add_auto_response_flow(self, f):
@@ -41,7 +43,8 @@ class AutoResponder(QtGui.QWidget):
             "active": True,
             "response": response,
             "match": url,
-            "matchType": "EXACT"
+            "matchType": "EXACT",
+            "file": ''
         }
 
         self.state.add_auto_response(url, data)
@@ -72,6 +75,24 @@ class AutoResponder(QtGui.QWidget):
         self.model.removeRow(index.row())
         self.state.remove_auto_response(key)
 
+    def set_stored_file_path(self, index):
+        key = str(self.model.itemFromIndex(index).text())
+        self.file_selector.set_file_path(self.state.get_content_file_path(key))
+
+    def set_content_from_file(self, file_path):
+        try:
+            content_file = open(file_path, 'r')
+            key = str(self.model.itemFromIndex(self.response_list.currentIndex()).text())
+            self.state.set_content_file_path(key, file_path)
+            response = self.state.get_cached_response(key)
+            response.content = str(content_file.read())
+            if response.headers.get_first('content-encoding'):
+                response.encode(self.conn.headers.get_first('content-encoding'))
+            self.state.set_auto_response(key, response)
+        except IOError:
+            show_dialog("Cannot read file")
+
+
 
 class FileSelector(QtGui.QWidget):
     def __init__(self):
@@ -85,10 +106,13 @@ class FileSelector(QtGui.QWidget):
         self.file_name = QtGui.QLineEdit()
         file_dialog_button = QtGui.QPushButton('...')
         file_dialog_button.clicked.connect(self.show_file_dialog)
+        save_button = QtGui.QPushButton('Save')
+        save_button.clicked.connect(self.send_file_content)
 
         layout.addWidget(label)
         layout.addWidget(self.file_name)
         layout.addWidget(file_dialog_button)
+        layout.addWidget(save_button)
 
         self.setLayout(layout)
         self.show()
@@ -97,16 +121,13 @@ class FileSelector(QtGui.QWidget):
         fileDialog = QtGui.QFileDialog()
         fileDialog.fileSelected.connect(self.set_file_path)
         fileDialog.exec_()
+        
+    def send_file_content(self):
+        self.emit(QtCore.SIGNAL('FILE_CONTENT_SET'), str(self.file_name.text()).strip())
 
     def set_file_path(self, path):
         self.file_name.setText(path)
 
-    def get_file(self):
-        try:
-            msg_file = open(self.file_name.text().strip())
-            return msg_file
-        except IOError:
-            show_dialog('Error opening file, check the path')
 
 
 class EditResponseDialog(QtGui.QDialog):
