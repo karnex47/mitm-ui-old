@@ -1,5 +1,5 @@
 # mitm-ui
-A GUI implemented with PyQt4 for libmproxy. It does not have all the features of mitmproxy. I built it with fiddler web debugger in mind. The auro responder of fiddler helped me a lot when web developing. Since I didn't find anything thats fiddler-like on OSX, I decided to build one. I made this for my own personal use, but improvement is always welcome.
+A GUI implemented with PyQt4 for libmproxy. It does not have all the features of mitmproxy. I built it with fiddler web debugger in mind. The auto responder of fiddler helped me a lot when web developing. Since I didn't find anything thats fiddler-like on OSX, I decided to build one. I made this for my own personal use, but improvement is always welcome.
 
 # Developement
 requirements:
