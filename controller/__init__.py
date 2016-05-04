@@ -18,7 +18,7 @@ class ControllerMaster(flow.FlowMaster):
         flow.FlowMaster.handle_request(self, f)
 
         auto_response = self.state.get_auto_response_data(f.request.url)
-        if auto_response and auto_response['active']:
+        if auto_response and auto_response['active'] and auto_response['method'] == f.request.method:
             response = deepcopy(auto_response['response'])
             response_headers = []
             for key, value in response.headers:

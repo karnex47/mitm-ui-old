@@ -51,6 +51,7 @@ class AutoResponder(QtGui.QWidget):
         response = copy.deepcopy(f.response)
         response.decode()
         data = {
+            "method": f.request.method,
             "active": True,
             "response": response,
             "match": url,
@@ -113,7 +114,7 @@ class CustomStandardListModel(QtGui.QStandardItemModel):
     onItemChange = QtCore.pyqtSignal(QtGui.QStandardItem, QtGui.QStandardItem)
 
     def setData(self, index, value, role):
-        if role == QtCore.Qt.EditRole or role == QtCore.Qt.DisplayRole:
+        if role == QtCore.Qt.EditRole or role == QtCore.Qt.DisplayRole or role == QtCore.Qt.CheckStateRole:
             old = self.itemFromIndex(index).clone()
             QtGui.QStandardItemModel.setData(self, index, value, role)
             new = self.itemFromIndex(index)
