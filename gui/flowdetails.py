@@ -1,7 +1,6 @@
 from PyQt4 import QtGui, QtCore
 from libmproxy import flow
 from copy import deepcopy
-from libmproxy import utils
 
 
 class FlowDetails(QtGui.QWidget):
@@ -33,15 +32,42 @@ class FlowDetailsTabs(QtGui.QTabWidget):
         self.create_tabs(editable)
 
     def create_tabs(self, editable):
-        self.header_details = HeaderDetails(self.conn, editable)
+        self.header_details = Headers(self.conn, editable)
         self.content_details = ContentDetails(self.conn, editable)
         self.insertTab(0, self.header_details, "Headers")
         self.insertTab(1, self.content_details, "Content")
 
     def get_edited_flow(self):
         self.conn.headers = self.header_details.get_headers()
+        if hasattr(self.conn, 'code'):
+            self.conn.code = self.header_details.get_code()
         self.conn.content = self.content_details.get_content()
         return self.conn
+
+
+class Headers(QtGui.QWidget):
+    def __init__(self, conn, editable=False):
+        QtGui.QWidget.__init__(self)
+        layout = QtGui.QVBoxLayout()
+
+        if hasattr(conn, 'url'):
+            layout.addWidget(QtGui.QLabel(conn.url))
+
+        self.headers = HeaderDetails(conn, editable)
+        layout.addWidget(self.headers)
+
+        if hasattr(conn, 'code'):
+            self.code = QtGui.QLineEdit(str(conn.code))
+            if not editable:
+                self.code.setReadOnly(True)
+            layout.addWidget(self.code)
+        self.setLayout(layout)
+
+    def get_headers(self):
+        return self.headers.get_headers()
+
+    def get_code(self):
+        return int(str(self.code.text()))
 
 
 class HeaderDetails(QtGui.QListWidget):

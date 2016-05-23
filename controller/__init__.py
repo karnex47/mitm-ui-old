@@ -1,6 +1,7 @@
 from libmproxy import flow
 from PyQt4 import QtCore
 from copy import deepcopy
+import re
 
 class ControllerMaster(flow.FlowMaster):
     def __init__(self, server, state, options):
@@ -33,6 +34,7 @@ class ControllerMaster(flow.FlowMaster):
             response_headers.append(['Pragma', 'no-cache'])
             response_headers.append(['Expires', '0'])
             response.headers = flow.ODictCaseless(response_headers)
+            # response.code = 200
             f.reply(response)
 
         elif f:
@@ -102,10 +104,19 @@ class ControllerState(flow.State, QtCore.QObject):
         try:
             return self._auto_respond[key]
         except KeyError:
-            return False
+            for url in self._auto_respond.keys():
+                if self.get_match_type(url) == 'REGEX' and re.compile(url).match(key):
+                    return self._auto_respond[url]
+            return None
 
     def set_auto_response_active(self, key, active):
         self._auto_respond[key]['active'] = bool(active)
+
+    def get_match_type(self, key):
+        return self._auto_respond[key]['matchType']
+
+    def set_match_type(self, key, value):
+        self._auto_respond[key]['matchType'] = value
 
     def set_auto_response(self, key, response):
         self._auto_respond[key]['response'] = response

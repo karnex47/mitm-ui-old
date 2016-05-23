@@ -74,6 +74,23 @@ class AutoResponder(QtGui.QWidget):
         self.connect(edit_response, QtCore.SIGNAL("triggered()"), self.edit_response_clicked)
         remove_response = self.listMenu.addAction("Remove Response")
         self.connect(remove_response, QtCore.SIGNAL("triggered()"), self.remove_response_clicked)
+
+        key = str(self.model.itemFromIndex(self.response_list.currentIndex()).text())
+        current_match_type = self.state.get_match_type(key)
+        set_match_type_ag = QtGui.QActionGroup(self)
+        set_match_type_ag.setExclusive(True)
+        exact_match = QtGui.QAction("Match: EXACT", self)
+        exact_match.setCheckable(True)
+        exact_match.setChecked(current_match_type == "EXACT")
+        re_match = QtGui.QAction("Match: REGEX", self)
+        re_match.setCheckable(True)
+        re_match.setChecked(current_match_type == "REGEX")
+        a = set_match_type_ag.addAction(exact_match)
+        self.listMenu.addAction(a)
+        a = set_match_type_ag.addAction(re_match)
+        self.listMenu.addAction(a)
+        set_match_type_ag.triggered.connect(self.set_match_type)
+
         parentPosition = self.mapToGlobal(QtCore.QPoint(0, 0))
         self.listMenu.move(parentPosition + QPos)
         self.listMenu.show()
@@ -90,6 +107,11 @@ class AutoResponder(QtGui.QWidget):
         key = str(self.model.itemFromIndex(index).text())
         self.model.removeRow(index.row())
         self.state.remove_auto_response(key)
+
+    def set_match_type(self, action):
+        key = str(self.model.itemFromIndex(self.response_list.currentIndex()).text())
+        value = str(action.text()).split(':')[1].strip()
+        self.state.set_match_type(key, value)
 
     def set_stored_file_path(self, index):
         key = str(self.model.itemFromIndex(index).text())

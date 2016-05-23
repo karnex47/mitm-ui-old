@@ -36,8 +36,10 @@ class MainGui(QtGui.QWidget):
 
     def show_main_widget(self, server, options):
         layout = QtGui.QHBoxLayout()
-        layout.addWidget(self.flow_list)
-        layout.addWidget(self.actions_view)
+        splitter = QtGui.QSplitter()
+        splitter.addWidget(self.flow_list)
+        splitter.addWidget(self.actions_view)
+        layout.addWidget(splitter)
         self.setLayout(layout)
         self.flow_list.setStyleSheet( """QListView:item:selected:active {background-color:red;}""")
 

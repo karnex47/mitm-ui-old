@@ -38,9 +38,7 @@ def main(argv):
     proxy_config = ProxyConfig(
         port=int(1025),
         # mode="upstream",
-        # upstream_server=(False, False, "www-ad-proxy.sabre.com", 80)
-        mode="upstream",
-        upstream_server=(False, False, "localhost", 8081)
+        # upstream_server=(False, False, "localhost", 8081)
     )
     server = get_server(proxy_config)
     options = None
