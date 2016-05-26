@@ -8,6 +8,7 @@ class FlowListModel(QtCore.QAbstractListModel):
         self.state = state
         self._data = self.state.view
         self.connect(self.state, QtCore.SIGNAL('UPDATE_LIST'), self.update_list)
+        self.connect(self.state, QtCore.SIGNAL("SEARCH_CHANGED"), self.hightlight_matches)
 
     def rowCount(self, QModelIndex_parent=None, *args, **kwargs):
         return len(self._data)
@@ -27,8 +28,18 @@ class FlowListModel(QtCore.QAbstractListModel):
         elif mode == 'delete':
             pass
 
+    def hightlight_matches(self):
+        for (i, f) in enumerate(self._data):
+            if not f.request.url.find(self.state.search_string) == -1:
+                index = self.createIndex(i, 0)
+                self.dataChanged.emit(index, index)
+
+
     def getFlowData(self, index):
         return self._data[index.row()]
+
+    def hasHighlight(self, index):
+        return self.state.search_string != "" and self._data[index.row()].request.url.find(self.state.search_string) != -1
 
 
 class FlowListItemDelegate(QtGui.QStyledItemDelegate):
@@ -42,7 +53,7 @@ class FlowListItemDelegate(QtGui.QStyledItemDelegate):
         painter.save()
         style = QtGui.QApplication.style() if options.widget is None else options.widget.style()
         doc = QtGui.QTextDocument()
-        text = self.getHTMLFromFlow(self.model.getFlowData(index))
+        text = self.getHTMLFromFlow(self.model.getFlowData(index), self.model.hasHighlight(index))
         doc.setHtml(text)
         options.text = ""
         style.drawControl(QtGui.QStyle.CE_ItemViewItem, options, painter)
@@ -62,7 +73,7 @@ class FlowListItemDelegate(QtGui.QStyledItemDelegate):
         doc.setTextWidth(doc.textWidth())
         return QtCore.QSize(doc.textWidth(), doc.size().height())
 
-    def getHTMLFromFlow(self, f):
+    def getHTMLFromFlow(self, f, highlight=False):
         html = '<div style="{0}">' \
                '<span>{1}</span>' \
                '<span class="spacer">  </span>' \
@@ -70,14 +81,16 @@ class FlowListItemDelegate(QtGui.QStyledItemDelegate):
                '<span class="space"r>  </span>' \
                '<span>{3}</span>' \
                '</div>'
-        style = 'color: black'
+        style = 'color: black;'
         code = '   '
         if f.live:
-            style = 'color: grey'
+            style = 'color: grey;'
         if f.error:
-            style = 'color: red'
+            style = 'color: red;'
         if f.response:
             code = f.response.code
+        if highlight:
+            style += "background: yellow;"
         return html.format(style, code, f.request.method, f.request.url)
 
 
@@ -93,8 +106,6 @@ class FlowList(QtGui.QListView):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_context_menu)
 
-        # self.setMaximumSize(2000,2000)
-        # self.setMinimumSize(400,400)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.show()
 

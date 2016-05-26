@@ -57,6 +57,7 @@ class ControllerState(flow.State, QtCore.QObject):
         QtCore.QObject.__init__(self)
         self._replay = []
         self._auto_respond = {}
+        self.search_string = ""
 
     def set_data_from_saved_state(self, saved_sate):
         self._auto_respond = saved_sate['auto_response']
@@ -87,6 +88,9 @@ class ControllerState(flow.State, QtCore.QObject):
         ret = flow.State.delete_flow(self, f)
         self.update_view(index, 'delete')
         return ret
+
+    def clear_view(self):
+        self.view = []
 
     def update_view(self, index=None, mode=''):
         self.emit(QtCore.SIGNAL('UPDATE_LIST'), index, mode)
@@ -134,3 +138,9 @@ class ControllerState(flow.State, QtCore.QObject):
         value = deepcopy(self._auto_respond[oldKey])
         self.remove_auto_response(oldKey)
         self.add_auto_response(newKey, value)
+
+    def set_search_string(self, string):
+        string = str(string)
+        string = string.strip()
+        self.search_string = str(string)
+        self.emit(QtCore.SIGNAL('SEARCH_CHANGED'))

@@ -55,8 +55,20 @@ class MainGui(QtGui.QWidget):
     def add_auto_response(self, f):
         self.actions_view.add_auto_response_flow(f)
 
+    def search_changed(self, newSearch):
+        self.state.set_search_string(newSearch)
+
+    def clear_view(self):
+        self.state.clear()
+
     def shut_down(self):
         self.controllerThread.terminate()
+
+    def start_thread(self):
+        self.controllerThread.start()
+
+    def start_thread(self, server):
+        self.controllerThread = ControllerThread(server, self.state)
 
     def get_prev_instance_state(self):
         try:
