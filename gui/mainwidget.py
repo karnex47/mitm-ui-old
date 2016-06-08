@@ -19,7 +19,10 @@ class ControllerThread(QtCore.QThread):
             print 'Could not run server'
 
     def terminate(self):
-        self.controller.shutdown()
+        try:
+            self.controller.shutdown()
+        except:
+            pass
         QtCore.QThread.terminate(self)
 
 
@@ -62,13 +65,18 @@ class MainGui(QtGui.QWidget):
         self.state.clear()
 
     def shut_down(self):
-        self.controllerThread.terminate()
+        if self.controllerThread.isRunning():
+            self.controllerThread.terminate()
 
-    def start_thread(self):
+    def start_server(self, server=None, options=None):
+        if self.controllerThread.isRunning():
+            self.controllerThread.terminate()
+        if server:
+            self.controllerThread = ControllerThread(server, self.state, options)
         self.controllerThread.start()
 
-    def start_thread(self, server):
-        self.controllerThread = ControllerThread(server, self.state)
+    def isServerRunning(self):
+        return self.controllerThread.isRunning()
 
     def get_prev_instance_state(self):
         try:

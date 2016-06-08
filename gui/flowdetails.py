@@ -56,6 +56,11 @@ class Headers(QtGui.QWidget):
         self.headers = HeaderDetails(conn, editable)
         layout.addWidget(self.headers)
 
+        if editable:
+            add_header_btn = QtGui.QPushButton('Add header')
+            add_header_btn.clicked.connect(self.headers.add_new_header)
+            layout.addWidget(add_header_btn)
+
         if hasattr(conn, 'code'):
             self.code = QtGui.QLineEdit(str(conn.code))
             if not editable:
@@ -75,6 +80,8 @@ class HeaderDetails(QtGui.QListWidget):
         QtGui.QListWidget.__init__(self)
         if editable:
             self.connect(self, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.editItem)
+            self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            self.connect(self, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_context_menu)
         for key, value in conn.headers:
             item = QtGui.QListWidgetItem(str(key)+': '+str(value))
             if editable:
@@ -85,10 +92,27 @@ class HeaderDetails(QtGui.QListWidget):
         headers = []
         for i in range(0, self.count()):
             item = self.item(i)
-            key = str(item.text().split(':')[0]).strip()
-            value = str(item.text().split(':')[1]).strip()
+            split_index = str(item.text()).find(':')
+            key = (str(item.text())[0:split_index]).strip()
+            value = (str(item.text())[split_index+1::]).strip()
             headers.append([key, value])
         return flow.ODictCaseless(headers)
+
+    def add_new_header(self):
+        new_header = QtGui.QListWidgetItem('Key: value')
+        new_header.setFlags(new_header.flags() | QtCore.Qt.ItemIsEditable)
+        self.addItem(new_header)
+
+    def show_context_menu(self, QPos):
+        self.listMenu = QtGui.QMenu()
+        remove_header = self.listMenu.addAction('Remove header')
+        self.connect(remove_header, QtCore.SIGNAL("triggered()"), self.remove_header)
+        parentPosition = self.mapToGlobal(QtCore.QPoint(0, 0))
+        self.listMenu.move(parentPosition + QPos)
+        self.listMenu.show()
+
+    def remove_header(self):
+        self.takeItem(self.currentRow())
 
 
 class ContentDetails(QtGui.QTextEdit):

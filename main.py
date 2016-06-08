@@ -4,8 +4,7 @@ from PyQt4 import QtGui
 from gui import MainWindow
 
 try:
-    from libmproxy.proxy.config import ProxyConfig
-    from libmproxy.proxy.server import ProxyServer
+    import libmproxy
     import OpenSSL
 except ImportError:
     print 'Could not start proxy, error loading libraries'
@@ -25,25 +24,11 @@ def check_pyopenssl_version():
         sys.exit(1)
 
 
-def get_server(options):
-    try:
-        return ProxyServer(options)
-    except:
-        print 'Error running proxy server'
-        sys.exit(1)
-
-
 def main(argv):
     check_pyopenssl_version()
-    proxy_config = ProxyConfig(
-        port=int(1026),
-        mode="upstream",
-        upstream_server=(False, False, "localhost", 8081)
-    )
-    server = get_server(proxy_config)
     options = None
     app = QtGui.QApplication(sys.argv)
-    ui = MainWindow(server, options)
+    ui = MainWindow(options)
     ui.setWindowTitle('Name TBD')
     ui.show()
     sys.exit(app.exec_())

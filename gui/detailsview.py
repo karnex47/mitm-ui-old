@@ -8,6 +8,7 @@ class DetailsView(QtGui.QDialog):
         tabs = DetailsTabs(self)
         tabs.set_flow(f)
         layout.addWidget(tabs)
+        layout.setMargin(0)
         self.setLayout(layout)
         self.setWindowTitle(f.request.url)
         self.setWindowModality(QtCore.Qt.ApplicationModal)

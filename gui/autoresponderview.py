@@ -1,6 +1,6 @@
 from PyQt4 import QtCore, QtGui
 from flowdetails import FlowDetails
-import copy
+import copy, re, os, urllib2
 
 class AutoResponder(QtGui.QWidget):
     def __init__(self, state):
@@ -74,6 +74,10 @@ class AutoResponder(QtGui.QWidget):
         self.connect(edit_response, QtCore.SIGNAL("triggered()"), self.edit_response_clicked)
         remove_response = self.listMenu.addAction("Remove Response")
         self.connect(remove_response, QtCore.SIGNAL("triggered()"), self.remove_response_clicked)
+        escape = self.listMenu.addAction("Escape URL")
+        self.connect(escape, QtCore.SIGNAL("triggered()"), self.escape_url)
+        unescape = self.listMenu.addAction("Unescape URL")
+        self.connect(unescape, QtCore.SIGNAL("triggered()"), self.unescape_url)
 
         key = str(self.model.itemFromIndex(self.response_list.currentIndex()).text())
         current_match_type = self.state.get_match_type(key)
@@ -109,9 +113,30 @@ class AutoResponder(QtGui.QWidget):
         self.state.remove_auto_response(key)
 
     def set_match_type(self, action):
-        key = str(self.model.itemFromIndex(self.response_list.currentIndex()).text())
+        item = self.model.itemFromIndex(self.response_list.currentIndex())
+        key = str(item.text())
         value = str(action.text()).split(':')[1].strip()
         self.state.set_match_type(key, value)
+        if value == 'REGEX':
+            self.escape_url(item)
+        else:
+            self.unescape_url(item)
+
+    def escape_url(self, item=None):
+        if not item:
+            item = self.model.itemFromIndex(self.response_list.currentIndex())
+        old_key = str(item.text())
+        new_key = re.escape(old_key)
+        item.setText(new_key)
+        self.state.replace_auto_response_key(old_key, new_key)
+
+    def unescape_url(self, item=None):
+        if not item:
+            item = self.model.itemFromIndex(self.response_list.currentIndex())
+        old_key = str(item.text())
+        new_key = re.sub(r'\\(.)', r'\1', old_key)
+        item.setText(new_key)
+        self.state.replace_auto_response_key(old_key, new_key)
 
     def set_stored_file_path(self, index):
         key = str(self.model.itemFromIndex(index).text())
@@ -119,7 +144,11 @@ class AutoResponder(QtGui.QWidget):
 
     def set_content_from_file(self, file_path):
         try:
-            content_file = open(file_path, 'r')
+            content_file = None
+            if os.path.isfile(file_path):
+                content_file = open(file_path, 'r')
+            else:
+                content_file = urllib2.urlopen(file_path)
             key = str(self.model.itemFromIndex(self.response_list.currentIndex()).text())
             self.state.set_content_file_path(key, file_path)
             response = self.state.get_cached_response(key)
@@ -128,7 +157,7 @@ class AutoResponder(QtGui.QWidget):
                 response.encode(self.conn.headers.get_first('content-encoding'))
             self.state.set_auto_response(key, response)
             content_file.close()
-        except IOError:
+        except IOError, HTTPError:
             show_dialog("Cannot read file")
 
 
@@ -189,7 +218,10 @@ class EditResponseDialog(QtGui.QDialog):
         self.callback = callback
         editor = FlowDetails(conn, self, True)
         self.connect(editor, QtCore.SIGNAL('onSave'), self.on_save)
-        editor.move(0,0)
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(editor)
+        layout.setMargin(0)
+        self.setLayout(layout)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.exec_()
 
